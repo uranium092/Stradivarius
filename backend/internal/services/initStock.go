@@ -13,6 +13,7 @@ import (
 	"github.com/uranium092/stradivarius/backend/internal/db"
 )
 
+// model for API Response.items
 type itemStock struct {
 	Ticker string `json:"ticker"`
 	TargetFrom string `json:"target_from"`
@@ -25,28 +26,31 @@ type itemStock struct {
 	Time string `json:"time"`
 }
 
+// model for API Response
 type stockResponse struct {
 	Items []itemStock `json:"items"`
 	NextPage string  `json:"next_page"`
 }
 
+// data needed to execute queries (insert itemStock)
 type utilsForExec struct{
 	query string
 	args []interface{}
 }
 
-func createUtilsForExec(items []itemStock) (utilsForExec){
+// method for generating the data needed to execute queries (insert itemStock)
+func createUtilsForExec(items []itemStock, utilsQuery *utilsForExec){
 	baseQuery:="INSERT INTO stock (ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, dateReleased) VALUES ";
 	values:=[]interface{}{};
 	for index,value:=range items{
+		// base N to auto-increment
 		basePlaceholder:=index*9;
-
+		// auto-increment N $1, $2, ...
 		baseQuery+=fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)", basePlaceholder+1, basePlaceholder+2, basePlaceholder+3, basePlaceholder+4, basePlaceholder+5, basePlaceholder+6, basePlaceholder+7, basePlaceholder+8, basePlaceholder+9);
 
 		if index<len(items)-1{
 			baseQuery+=",";
 		}
-
 		targetFrom, err:=strconv.ParseFloat( strings.ReplaceAll(value.TargetFrom,"$","") ,64);
 		if err != nil{
 			targetFrom=0;
@@ -55,9 +59,10 @@ func createUtilsForExec(items []itemStock) (utilsForExec){
 		if err != nil{
 			targetTo=0;
 		}
+		// add args (matching position con N...)
 		values=append(values, value.Ticker, targetFrom, targetTo, value.Company, value.Action, value.Brokerage, value.RatingFrom, value.RatingTo, value.Time);
 	}
-	return utilsForExec{query: baseQuery, args: values};
+	*utilsQuery=utilsForExec{query: baseQuery, args: values};
 }
 
 func InitDataStock() error {
@@ -84,23 +89,22 @@ func InitDataStock() error {
 	var errorTransaction error;
 	t,err:=conn.Begin(context.Background());
 
+	//abort changes in DB if something crash with transaction
 	defer func(){
 		if errorTransaction!=nil{
 			t.Rollback(context.Background());
 		}
 	}();
 	
-
 	if err!=nil{
 		return err;
 	}
 
 	for {
-
+		//controlled errors: API Response
 		if errorsApiHttp>=3{
 			break;
 		}
-
 		paramHttpReq:="";
 		if nextPage != "" {
 			paramHttpReq="?next_page="+nextPage;
@@ -134,38 +138,37 @@ func InitDataStock() error {
 		//close stream
 		resp.Body.Close();
 
-		dataForExec:=createUtilsForExec(bodyResponse.Items);
-
-		_,errSQL:=t.Exec(context.Background(),dataForExec.query, dataForExec.args...);
+		//get data needeed for exec insert
+		var utilsQuery utilsForExec;
+		createUtilsForExec(bodyResponse.Items, &utilsQuery);
+		//set and exec data
+		_,errSQL:=t.Exec(context.Background(),utilsQuery.query, utilsQuery.args...);
 
 		if errSQL!=nil{
 			errorTransaction=errSQL;
 			return fmt.Errorf("transaction error: %w", errSQL);
 		}
-
 		if bodyResponse.NextPage==""{
 			break;
 		}
-		
 		nextPage=bodyResponse.NextPage;
 	}
 
-	var statusToReturn error=nil;
-	statusDone:=true;
+	//validate if API failed
+	var status error=nil;
 	if errorsApiHttp>=3{
-		statusToReturn=errors.New("stock server is not working");
-		statusDone=false;
+		status=errors.New("stock server is not working");
 	}
-	_,errSQL:=t.Exec(context.Background(),"UPDATE stock_status SET done=$1, next_page=$2",statusDone,nextPage);
-
+	//save status and stock population progress
+	_,errSQL:=t.Exec(context.Background(),"UPDATE stock_status SET done=$1, next_page=$2",status==nil,nextPage);
 	if errSQL!=nil{
 		errorTransaction=errSQL;
 		return fmt.Errorf("transaction error: %w", errSQL);
 	}
-
+	//save all or nothing
 	if err:=t.Commit(context.Background());err!=nil{
 		return err;
 	}
 
-	return statusToReturn;
+	return status;
 }
