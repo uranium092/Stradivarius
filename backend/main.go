@@ -6,7 +6,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/uranium092/stradivarius/backend/internal/db"
-	"github.com/uranium092/stradivarius/backend/internal/services"
+	"github.com/uranium092/stradivarius/backend/internal/repository"
+	"github.com/uranium092/stradivarius/backend/internal/service"
 )
 
 func main() {
@@ -17,17 +18,20 @@ func main() {
 			log.Fatalf("Error on .ENV file: %v", err)
 		 }
 	}
-
 	//connect to cockroachDB
-	err:=db.InitConnection();
+	conn,err:=db.InitConnection();
 	if err != nil{
 		log.Fatalf("Error on initConnection with DB => %v",err);
 	}
 
+	//init layers
+	stockRepository:=repository.NewStockRepository(conn);
+	stockService:=service.NewStockService(stockRepository);
+
 	//stock initialization
-	res:=services.InitDataStock();
+	res:=stockService.InitDataStock();
 	if res != nil{
 		log.Fatalf("Error populating Stock. Restart to continue. Info => %v",res);
 	}
-
+	
 }
