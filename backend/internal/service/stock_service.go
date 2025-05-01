@@ -60,7 +60,7 @@ func (service *stockService) InitDataStock() error{
     errQuery:=service.repo.InsertStockItems(bodyResponse.Items, tr);
 		if errQuery!=nil {
 			errorTransaction=errQuery;
-			return fmt.Errorf("transaction error: %w", errQuery);
+			return fmt.Errorf("transaction error1: %w", errQuery);
 		}
 		if bodyResponse.NextPage==""{
 			break;
@@ -77,7 +77,7 @@ func (service *stockService) InitDataStock() error{
 		_,errQuery:=tr.Exec(context.Background(),"UPDATE stock_status SET done=$1, next_page=$2",status==nil,nextPage);
 		if errQuery!=nil{
 			errorTransaction=errQuery;
-			return fmt.Errorf("transaction error: %w", errQuery);
+			return fmt.Errorf("transaction errorsss: %w", errQuery);
 		}
 		//save all or nothing
 		if err:=tr.Commit(context.Background());err!=nil{

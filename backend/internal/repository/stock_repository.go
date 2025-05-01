@@ -32,12 +32,15 @@ func (conn *stockRepository) GetStockStatus() (bool, string, error){
 }
 
 func (conn *stockRepository) InsertStockItems(items []models.ItemStock, tr pgx.Tx) error{
+	if len(items)==0{
+		return nil;
+	}
 	baseQuery:="INSERT INTO stock (ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, dateReleased) VALUES ";
 	values:=[]interface{}{};
 
 	for index,value:=range items{
 				// base N to auto-increment
-				basePlaceholder:=index*9;
+				basePlaceholder:=index*9; 
 				// auto-increment N $1, $2, ...
 				baseQuery+=fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)", basePlaceholder+1, basePlaceholder+2, basePlaceholder+3, basePlaceholder+4, basePlaceholder+5, basePlaceholder+6, basePlaceholder+7, basePlaceholder+8, basePlaceholder+9);
 

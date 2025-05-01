@@ -2,6 +2,7 @@ package external
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -26,14 +27,14 @@ func DoRequestStock(baseURL string) (models.StockResponse, error){
 		defer resp.Body.Close()
 
 		if resp.StatusCode<200 || resp.StatusCode>300{
-			return models.StockResponse{}, err;
+			return models.StockResponse{}, fmt.Errorf("http error => %d", resp.StatusCode);
 		}
 		
 		//decode JSON to struct
 		var bodyResponse models.StockResponse;
 		decoded:=json.NewDecoder(resp.Body).Decode(&bodyResponse);
 		if decoded != nil{
-			return models.StockResponse{}, err;
+			return models.StockResponse{}, decoded;
 		}
 		return bodyResponse, nil;
 }
