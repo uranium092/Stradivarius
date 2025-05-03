@@ -1,41 +1,40 @@
-#------------ back
+# ------------ backend
 backend/.ENV
 
 
-#------------ front
+# ------------ frontend
 
 # Logs
-/frontend/logs
-/frontend/*.log
-/frontend/npm-debug.log*
-/frontend/yarn-debug.log*
-/frontend/yarn-error.log*
-/frontend/pnpm-debug.log*
-/frontend/lerna-debug.log*
+frontend/stradivarius/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Build & dependencies
-/frontend/node_modules
-/frontend/dist
-/frontend/dist-ssr
-/frontend/coverage
-/frontend/*.local
+# Dependency
+frontend/stradivarius/node_modules
 
-# Cypress
-/frontend/cypress/videos/
-/frontend/cypress/screenshots/
+# Build
+.DS_Store
+frontend/stradivarius/dist
+frontend/stradivarius/dist-ssr
+frontend/stradivarius/coverage
+*.local
 
-# OS & IDE files
-/frontend/.DS_Store
+frontend/stradivarius/cypress/videos/
+frontend/stradivarius/cypress/screenshots/
 
 # Editor directories and files
-/frontend/.vscode/*
-!/frontend/.vscode/extensions.json
-/frontend/.idea
-/frontend/*.suo
-/frontend/*.ntvs*
-/frontend/*.njsproj
-/frontend/*.sln
-/frontend/*.sw?
+frontend/stradivarius/.vscode/*
+!frontend/stradivarius/.vscode/extensions.json
+frontend/stradivarius/.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# TypeScript build info
-/frontend/*.tsbuildinfo
+# TS
+*.tsbuildinfo
