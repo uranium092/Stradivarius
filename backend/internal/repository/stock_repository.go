@@ -15,6 +15,8 @@ type StockRepository interface {
 	GetConnection() *pgxpool.Pool;
 	GetStockStatus() (bool, string, error)
 	InsertStockItems(items []models.ItemStock, tr pgx.Tx) error
+	GetAllStock(queries *models.RequestQueries) (pgx.Rows, error)
+	GetRecommendation(queries *models.RequestQueries) (pgx.Rows, error)
 }
 
 type stockRepository struct {
@@ -62,6 +64,62 @@ func (conn *stockRepository) InsertStockItems(items []models.ItemStock, tr pgx.T
 
 func (conn *stockRepository) GetConnection() *pgxpool.Pool{
 	return conn.db;
+}
+
+func (conn *stockRepository) buildSQLClause(queries *models.RequestQueries, mode string) (string, []interface{}){
+
+	//WHERE (search)
+	baseSQLClause:="";
+	baseSQLArgs:=[]interface{}{};
+	if queries.Search!=""{
+		expression:=" WHERE";
+		if mode=="recommendation"{
+			expression=" AND";
+		}
+		baseSQLClause+=fmt.Sprintf(" %s ticker ILIKE $1 OR company ILIKE $2 OR action ILIKE $3 OR brokerage ILIKE $4 OR rating_to ILIKE $5",expression);
+		param:="%"+queries.Search+"%";
+		baseSQLArgs=append(baseSQLArgs, param, param, param, param, param);
+	}
+	
+	// ORDER BY (sort)
+	if queries.Sort!=""{
+		parts:=strings.Split(queries.Sort,"$"); // tableName$direction -> [tableName, direction]
+		parts[0]=strings.ToLower(parts[0]); // tableName
+		parts[1]=strings.ToUpper(parts[1]); // direction
+		baseSQLClause+=fmt.Sprintf(" ORDER BY %s %s, id", parts[0], parts[1]);
+	}else if mode=="recommendation"{
+		baseSQLClause+=" ORDER BY total_rating DESC, id"
+	}
+
+	//OFFSET-LIMIT (page)
+	offset:=(queries.Page-1)*25;
+	limit:=25;
+	baseSQLClause+=fmt.Sprintf(" OFFSET $%d LIMIT $%d", len(baseSQLArgs)+1, len(baseSQLArgs)+2);
+	baseSQLArgs=append(baseSQLArgs, offset, limit);
+
+	return baseSQLClause, baseSQLArgs;
+}
+
+func (conn *stockRepository) GetAllStock(queries *models.RequestQueries) (pgx.Rows,error){
+	baseQuery:="SELECT COUNT(*) OVER(),* FROM stock";
+	clause, args:=conn.buildSQLClause(queries, "all");
+	rows,err:=conn.db.Query(context.Background(),baseQuery+clause,args...);
+	if err!=nil{
+		return nil, fmt.Errorf("error on Query -> %w",err);
+	}
+	return rows, nil;
+}
+
+func (conn *stockRepository) GetRecommendation(queries *models.RequestQueries) (pgx.Rows,error){
+	baseQuery:="SELECT COUNT(*) OVER(), id, ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, datereleased FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,* FROM STOCK WHERE (rating_to ILIKE '%buy%') AND (rating_to NOT ILIKE '%spe%') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>5";
+
+	clause, args:=conn.buildSQLClause(queries, "recommendation");
+	fmt.Println(baseQuery+clause, args);
+	rows,err:=conn.db.Query(context.Background(),baseQuery+clause,args...);
+	if err!=nil{
+		return nil, fmt.Errorf("error on Query -> %w",err);
+	}
+	return rows, nil;
 }
 
 func NewStockRepository(db *pgxpool.Pool) StockRepository {

@@ -1,7 +1,12 @@
 <script lang="ts" setup>
+import { onMounted } from 'vue';
 import { useFetchingStore } from '../stores/fetching';
 
 const fetchingStore = useFetchingStore();
+
+onMounted(() => {
+  fetchingStore.changeMode('all', true);
+});
 </script>
 
 <template>
@@ -40,105 +45,31 @@ const fetchingStore = useFetchingStore();
               </tr>
             </thead>
             <tbody>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-              </tr>
-              <tr class="bg-gray-100">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Mark</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">Otto</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
-                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">@mdo</td>
+              <tr class="bg-gray-100" v-for="i in fetchingStore.tableData" v-bind:key="i.Id">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ i.ticker }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.target_from }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.target_to }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.company }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.action }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.brokerage }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.rating_from }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ i.rating_to }}
+                </td>
               </tr>
             </tbody>
           </table>

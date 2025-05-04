@@ -4,13 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/uranium092/stradivarius/backend/internal/external"
+	"github.com/uranium092/stradivarius/backend/internal/models"
 	"github.com/uranium092/stradivarius/backend/internal/repository"
 )
 
 type StockService interface {
 	InitDataStock() error;
+	GetStock(queries *models.RequestQueries, mode string) ([]models.ItemStock, int, error);
 }
 
 type stockService struct {
@@ -60,7 +64,7 @@ func (service *stockService) InitDataStock() error{
     errQuery:=service.repo.InsertStockItems(bodyResponse.Items, tr);
 		if errQuery!=nil {
 			errorTransaction=errQuery;
-			return fmt.Errorf("transaction error1: %w", errQuery);
+			return fmt.Errorf("transaction error: %w", errQuery);
 		}
 		if bodyResponse.NextPage==""{
 			break;
@@ -77,7 +81,7 @@ func (service *stockService) InitDataStock() error{
 		_,errQuery:=tr.Exec(context.Background(),"UPDATE stock_status SET done=$1, next_page=$2",status==nil,nextPage);
 		if errQuery!=nil{
 			errorTransaction=errQuery;
-			return fmt.Errorf("transaction errorsss: %w", errQuery);
+			return fmt.Errorf("transaction error: %w", errQuery);
 		}
 		//save all or nothing
 		if err:=tr.Commit(context.Background());err!=nil{
@@ -85,6 +89,34 @@ func (service *stockService) InitDataStock() error{
 		}
 	
 		return status;
+}
+
+func (service *stockService) GetStock(queries *models.RequestQueries, mode string) ([]models.ItemStock,int,error){
+	var rows pgx.Rows;
+	var err error;
+	if mode=="all"{
+		rows,err=service.repo.GetAllStock(queries);
+		if err!=nil{
+			return nil, 0, fmt.Errorf("error retrieving entire Stock -> %w",err);
+		}
+	}else if mode=="recommendation"{
+		rows,err=service.repo.GetRecommendation(queries);
+		if err!=nil{
+			return nil, 0, fmt.Errorf("error retrieving recommendation Stock -> %w",err);
+		}
+	}
+	stock :=[]models.ItemStock{};
+	var count int;
+	for rows.Next(){
+		var row models.ItemStock;
+		err=rows.Scan(&count, &row.Id, &row.Ticker, &row.TargetFrom, &row.TargetTo, &row.Company, &row.Action, &row.Brokerage, &row.RatingFrom, &row.RatingTo, &row.Time);
+		if err!=nil{
+			return nil, 0, fmt.Errorf("error processing row -> %w",err);
+		}
+		stock=append(stock, row);
+	}
+	totalPages:=math.Ceil( float64(count)/float64(25) );
+	return stock, int(totalPages), nil;
 }
 
 func NewStockService(r repository.StockRepository) StockService {

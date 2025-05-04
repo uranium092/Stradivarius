@@ -59,4 +59,4 @@ $$ LANGUAGE PLpgSQL;
 
 -- Base Query to get the best actions to invest (invoke function above)
 -- NOTE: 'WHERE total_rating>5' is adaptable; Highest comparition for more specificity, lower for less
-SELECT * FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,target_from, target_to, action, rating_to FROM STOCK WHERE (rating_to ILIKE '%buy%') AND (rating_to NOT ILIKE '%spe%') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>5 ORDER BY total_rating DESC;
+SELECT * FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,* FROM STOCK WHERE (rating_to ILIKE '%buy%') AND (rating_to NOT ILIKE '%spe%') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>5 ORDER BY total_rating DESC, id;

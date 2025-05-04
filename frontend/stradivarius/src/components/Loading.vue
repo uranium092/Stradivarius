@@ -1,7 +1,12 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { useFetchingStore } from '../stores/fetching';
+
+const fetchingStore = useFetchingStore();
+</script>
 
 <template>
   <div
+    v-if="fetchingStore.isLoading"
     class="flex items-center justify-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
   >
     <button

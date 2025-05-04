@@ -22,11 +22,11 @@ const fetchingStore = useFetchingStore();
         <span
           :class="[
             'flex items-center justify-center gap-2 rounded-lg hover:bg-white px-3 py-2 cursor-pointer',
-            fetchingStore.mode === 'recomm'
+            fetchingStore.mode === 'recommendation'
               ? 'relative bg-white shadow-lg'
               : 'text-gray-500 hover:shadow',
           ]"
-          @click="fetchingStore.changeMode('recomm')"
+          @click="fetchingStore.changeMode('recommendation')"
         >
           Recommendations</span
         >

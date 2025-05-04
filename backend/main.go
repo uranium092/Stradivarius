@@ -4,8 +4,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/uranium092/stradivarius/backend/internal/db"
+	"github.com/uranium092/stradivarius/backend/internal/handler"
 	"github.com/uranium092/stradivarius/backend/internal/repository"
 	"github.com/uranium092/stradivarius/backend/internal/service"
 )
@@ -34,4 +37,10 @@ func main() {
 		log.Fatalf("Error populating Stock. Restart to continue. Info => %v",res);
 	}
 	
+	//define router and groups
+	router:=gin.Default();
+	router.Use(cors.Default());
+	handler.SetupStockHanlder(router.Group("/api"),stockService);
+
+	router.Run(":8080");
 }
