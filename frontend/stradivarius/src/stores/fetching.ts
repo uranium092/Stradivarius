@@ -7,9 +7,9 @@ interface Pagination {
   currentSection: number;
 }
 
-interface Filters {
-  search: string;
-  sort: string;
+interface SortFilter {
+  columnName: string;
+  sortType: string;
 }
 
 interface ItemStock {
@@ -43,9 +43,10 @@ export const useFetchingStore = defineStore('fetching', () => {
     totalPages: 0,
     currentSection: 1,
   });
-  const filters = reactive<Filters>({
-    search: '',
-    sort: '',
+  const searchFilter = ref<string>('');
+  const sortFilter = reactive<SortFilter>({
+    columnName: '',
+    sortType: '',
   });
 
   //getters
@@ -89,13 +90,18 @@ export const useFetchingStore = defineStore('fetching', () => {
     page?: number;
     search?: string;
     sort?: string;
-  }): Promise<number> => {
+  }): Promise<boolean> => {
     isLoading.value = true;
     try {
       const pathReq: string = path ? path : mode.value;
       const pageReq: number = page ? page : pagination.currentPage;
-      const searchReq: string = search ? search : filters.search;
-      const sortReq: string = sort ? sort : filters.sort;
+      const searchReq: string = search !== undefined ? search : searchFilter.value;
+      const sortReq: string =
+        sort !== undefined
+          ? sort
+          : sortFilter.columnName.length > 0
+          ? `${sortFilter.columnName}$${sortFilter.sortType}`
+          : '';
 
       let baseUrl: string = `http://localhost:8080/api/stock/${pathReq}?page=${pageReq}`;
 
@@ -109,10 +115,10 @@ export const useFetchingStore = defineStore('fetching', () => {
       const { dataStock, totalPages }: JSONResponse = await fetched.json();
       pagination.totalPages = totalPages;
       tableData.value = dataStock;
-      return totalPages;
+      return true;
     } catch (err: any) {
       setError();
-      return 0;
+      return false;
     } finally {
       isLoading.value = false;
     }
@@ -122,21 +128,57 @@ export const useFetchingStore = defineStore('fetching', () => {
     if (page === pagination.currentPage) {
       return;
     }
-    await fetchDataTable({ page });
-    pagination.currentPage = page;
+    const success: boolean = await fetchDataTable({ page });
+    if (success) {
+      pagination.currentPage = page;
+    }
   };
 
-  const changeMode = async (modeType: string, init?: boolean): Promise<void> => {
-    const payload: { path: string; page: number } = { path: `${modeType}`, page: 1 };
-    await fetchDataTable(payload);
-    pagination.currentPage = 1;
-    pagination.currentSection = 1;
-    mode.value = modeType;
+  const changeMode = async (modeType: string): Promise<void> => {
+    if (modeType === mode.value) {
+      return;
+    }
+    const success: boolean = await fetchDataTable({ path: `${modeType}`, page: 1 });
+    if (success) {
+      pagination.currentPage = 1;
+      pagination.currentSection = 1;
+      mode.value = modeType;
+    }
+  };
+
+  const execSearch = async (value: string): Promise<void> => {
+    if (value === searchFilter.value) {
+      return;
+    }
+    const success: boolean = await fetchDataTable({ search: value });
+    if (success) {
+      pagination.currentPage = 1;
+      pagination.currentSection = 1;
+      searchFilter.value = value;
+    }
+  };
+
+  const execSort = async (columnName: string): Promise<void> => {
+    let newSortMode: string = 'ASC';
+    if (columnName === sortFilter.columnName) {
+      newSortMode = sortFilter.sortType === 'ASC' ? 'DESC' : 'ASC';
+    }
+    if (columnName === '') {
+      newSortMode = '';
+    }
+    const success: boolean = await fetchDataTable({
+      sort: columnName.length > 0 ? `${columnName}$${newSortMode}` : '',
+    });
+    if (success) {
+      sortFilter.columnName = columnName;
+      sortFilter.sortType = newSortMode;
+    }
   };
 
   return {
     mode,
-    filters,
+    sortFilter,
+    searchFilter,
     isLoading,
     hasError,
     tableData,
@@ -145,5 +187,7 @@ export const useFetchingStore = defineStore('fetching', () => {
     getItemsRenderPagination,
     changePage,
     changeMode,
+    execSearch,
+    execSort,
   };
 });
