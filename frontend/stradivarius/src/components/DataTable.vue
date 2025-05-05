@@ -7,6 +7,16 @@ const fetchingStore = useFetchingStore();
 onMounted(() => {
   fetchingStore.changeMode('all');
 });
+const columns: { inner: string; id: string }[] = [
+  { inner: 'Ticker', id: 'ticker' },
+  { inner: 'Target from', id: 'target_from' },
+  { inner: 'Target to', id: 'target_to' },
+  { inner: 'Company', id: 'company' },
+  { inner: 'Action', id: 'action' },
+  { inner: 'Brokerage', id: 'brokerage' },
+  { inner: 'Rating from', id: 'rating_from' },
+  { inner: 'Rating to', id: 'rating_to' },
+];
 </script>
 
 <template>
@@ -18,76 +28,18 @@ onMounted(() => {
           <table class="min-w-full">
             <thead class="bg-white sticky top-0 shadow-md">
               <tr>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('ticker')"
-                    >Ticker</span
+                <th
+                  scope="col"
+                  class="text-sm font-medium text-gray-900 px-4 py-2 text-center"
+                  v-for="c in columns"
+                  v-bind:key="c.id"
+                >
+                  <span class="cursor-pointer" @click="fetchingStore.execSort(c.id)">{{
+                    c.inner
+                  }}</span
                   >&nbsp;<span
                     class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'ticker'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('target_from')"
-                    >Target from</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'target_from'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('target_to')"
-                    >Target to</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'target_to'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('company')"
-                    >Company</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'company'"
-                    x
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('action')"
-                    >Action</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'action'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('brokerage')"
-                    >Brokerage</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'brokerage'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('rating_from')"
-                    >Rating from</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'rating_from'"
-                    >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
-                  >
-                </th>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-4 py-2 text-center">
-                  <span class="cursor-pointer" @click="fetchingStore.execSort('rating_to')"
-                    >Rating to</span
-                  >&nbsp;<span
-                    class="text-lg"
-                    v-if="fetchingStore.sortFilter.columnName === 'rating_to'"
+                    v-if="fetchingStore.sortFilter.columnName === c.id"
                     >{{ fetchingStore.sortFilter.sortType === 'ASC' ? '↑' : '↓' }}</span
                   >
                 </th>

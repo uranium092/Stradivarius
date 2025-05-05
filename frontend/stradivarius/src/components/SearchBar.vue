@@ -19,7 +19,7 @@ const dicColumnNames = {
 </script>
 
 <template>
-  <div class="flex justify-center items-center gap-3 mt-4">
+  <div class="flex justify-center items-center gap-3 mt-4 flex-col md:flex-row">
     <div class="flex overflow-hidden rounded-md bg-gray-200 focus:outline focus:outline-blue-500">
       <input
         type="text"
