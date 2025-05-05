@@ -30,7 +30,7 @@ const columns: { inner: string; id: string }[] = [
               <tr>
                 <th
                   scope="col"
-                  class="text-sm font-medium text-gray-900 px-4 py-2 text-center"
+                  class="text-sm font-medium text-gray-900 px-4 py-3 text-center"
                   v-for="c in columns"
                   v-bind:key="c.id"
                 >
