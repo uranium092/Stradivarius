@@ -8,29 +8,31 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/uranium092/stradivarius/backend/internal/apperrors"
 	"github.com/uranium092/stradivarius/backend/internal/models"
 )
 
 type StockRepository interface {
 	GetConnection() *pgxpool.Pool;
-	GetStockStatus() (bool, string, error)
+	GetStockStatus() (models.StockStatus, error)
 	InsertStockItems(items []models.ItemStock, tr pgx.Tx) error
-	GetAllStock(queries *models.RequestQueries) (pgx.Rows, error)
-	GetRecommendation(queries *models.RequestQueries) (pgx.Rows, error)
+	GetAllStock(queries models.RequestQueries) (pgx.Rows, error)
+	GetRecommendation(queries models.RequestQueries) (pgx.Rows, error)
 }
 
 type stockRepository struct {
 	db *pgxpool.Pool
 }
 
-func (conn *stockRepository) GetStockStatus() (bool, string, error){
-	var done bool;
-	var nextPage string;
-	err:=conn.db.QueryRow(context.Background(),"SELECT done, next_page FROM stock_status LIMIT 1").Scan(&done, &nextPage);
+func (conn *stockRepository) GetStockStatus() (models.StockStatus, error){
+	var status models.StockStatus; // determine if it is finished
+	
+	// get last progress of stock population
+	err:=conn.db.QueryRow(context.Background(),"SELECT done, next_page FROM stock_status LIMIT 1").Scan(&status.Done, &status.NextPage);
 	if err!=nil {
-		return false,"",err;
+		return models.StockStatus{},err;
 	}
-	return done,nextPage,nil;
+	return status,nil;
 }
 
 func (conn *stockRepository) InsertStockItems(items []models.ItemStock, tr pgx.Tx) error{
@@ -66,11 +68,12 @@ func (conn *stockRepository) GetConnection() *pgxpool.Pool{
 	return conn.db;
 }
 
-func (conn *stockRepository) buildSQLClause(queries *models.RequestQueries, mode string) (string, []interface{}){
+func (conn *stockRepository) buildSQLClause(queries models.RequestQueries, mode string) (string, []interface{}, error){
 
-	//WHERE (search)
 	baseSQLClause:="";
 	baseSQLArgs:=[]interface{}{};
+
+	//WHERE (search)
 	if queries.Search!=""{
 		expression:=" WHERE";
 		if mode=="recommendation"{
@@ -83,11 +86,28 @@ func (conn *stockRepository) buildSQLClause(queries *models.RequestQueries, mode
 	
 	// ORDER BY (sort)
 	if queries.Sort!=""{
-		parts:=strings.Split(queries.Sort,"$"); // tableName$direction -> [tableName, direction]
-		parts[0]=strings.ToLower(parts[0]); // tableName
-		parts[1]=strings.ToUpper(parts[1]); // direction
-		baseSQLClause+=fmt.Sprintf(" ORDER BY %s %s, id", parts[0], parts[1]);
-	}else if mode=="recommendation"{
+		parts:=strings.Split(queries.Sort,"$"); // columnName$direction -> [tableName, direction]
+		columnName:=strings.ToLower(parts[0]); // e.g. rating_to
+		direction:=strings.ToUpper(parts[1]); // e.g. ASC
+
+		// validate params
+		allowedColumns:=map[string]bool{
+			"ticker":true,
+			"target_from":true,
+			"target_to":true,
+			"company":true,
+			"action":true,
+			"brokerage":true,
+			"rating_from":true,
+			"rating_to":true,
+		};
+
+		if !allowedColumns[columnName] || (direction!="ASC" && direction!="DESC"){
+			return "", nil, apperrors.ErrBadRequest;
+		}
+
+		baseSQLClause+=fmt.Sprintf(" ORDER BY %s %s, id", columnName, direction);
+	}else if mode=="recommendation"{ // set default sort for recommendation algorithm
 		baseSQLClause+=" ORDER BY total_rating DESC, id"
 	}
 
@@ -97,12 +117,15 @@ func (conn *stockRepository) buildSQLClause(queries *models.RequestQueries, mode
 	baseSQLClause+=fmt.Sprintf(" OFFSET $%d LIMIT $%d", len(baseSQLArgs)+1, len(baseSQLArgs)+2);
 	baseSQLArgs=append(baseSQLArgs, offset, limit);
 
-	return baseSQLClause, baseSQLArgs;
+	return baseSQLClause, baseSQLArgs, nil;
 }
 
-func (conn *stockRepository) GetAllStock(queries *models.RequestQueries) (pgx.Rows,error){
+func (conn *stockRepository) GetAllStock(queries models.RequestQueries) (pgx.Rows,error){
 	baseQuery:="SELECT COUNT(*) OVER(),* FROM stock";
-	clause, args:=conn.buildSQLClause(queries, "all");
+	clause, args, err:=conn.buildSQLClause(queries, "all");
+	if err!=nil{
+		return nil, fmt.Errorf("error building SQL Clause-> %w",err);
+	}
 	rows,err:=conn.db.Query(context.Background(),baseQuery+clause,args...);
 	if err!=nil{
 		return nil, fmt.Errorf("error on Query -> %w",err);
@@ -110,11 +133,16 @@ func (conn *stockRepository) GetAllStock(queries *models.RequestQueries) (pgx.Ro
 	return rows, nil;
 }
 
-func (conn *stockRepository) GetRecommendation(queries *models.RequestQueries) (pgx.Rows,error){
+func (conn *stockRepository) GetRecommendation(queries models.RequestQueries) (pgx.Rows,error){
+	//base Query to get the best actions
+	//invokes an algorithm stored in CockroachDB
 	baseQuery:="SELECT COUNT(*) OVER(), id, ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, datereleased FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,* FROM STOCK WHERE (rating_to ILIKE '%buy%') AND (rating_to NOT ILIKE '%spe%') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>5";
 
-	clause, args:=conn.buildSQLClause(queries, "recommendation");
-	fmt.Println(baseQuery+clause, args);
+	clause, args, err:=conn.buildSQLClause(queries, "recommendation");
+	if err!=nil{
+		return nil, fmt.Errorf("error building SQL Clause-> %w",err);
+	}
+
 	rows,err:=conn.db.Query(context.Background(),baseQuery+clause,args...);
 	if err!=nil{
 		return nil, fmt.Errorf("error on Query -> %w",err);

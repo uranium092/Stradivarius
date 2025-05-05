@@ -9,7 +9,7 @@ import (
 	"github.com/uranium092/stradivarius/backend/internal/models"
 )
 
-func DoRequestStock(baseURL string) (*models.StockResponse, error){
+func DoRequestStock(baseURL string) (*models.StockResponsePopulation, error){
     //init clientHttp and create/custom Req
 		client:=&http.Client{};
 		req,err:=http.NewRequest("GET", baseURL, nil);
@@ -31,7 +31,7 @@ func DoRequestStock(baseURL string) (*models.StockResponse, error){
 		}
 		
 		//decode JSON to struct
-		var bodyResponse *models.StockResponse;
+		var bodyResponse *models.StockResponsePopulation;
 		err=json.NewDecoder(resp.Body).Decode(&bodyResponse);
 		if err != nil{
 			return nil, err;

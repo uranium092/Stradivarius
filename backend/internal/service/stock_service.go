@@ -14,7 +14,7 @@ import (
 
 type StockService interface {
 	InitDataStock() error;
-	GetStock(queries *models.RequestQueries, mode string) ([]models.ItemStock, int, error);
+	GetStock(queries models.RequestQueries, mode string) (models.StockResponse, error);
 }
 
 type stockService struct {
@@ -23,13 +23,15 @@ type stockService struct {
 
 func (service *stockService) InitDataStock() error{
 	//verify stock_status
-	done, nextPage, err:=service.repo.GetStockStatus();
+	stockStatus, err:=service.repo.GetStockStatus();
 	if err!=nil{
 		return err;
 	}
-  if done{
+  if stockStatus.Done{
 		return nil;
 	}
+
+	nextPage:=stockStatus.NextPage; // continue stock population with last report of nextPage
 
 	//continue process of Stock population
 	baseURLHttpReq:="https://8j5baasof2.execute-api.us-west-2.amazonaws.com/production/swechallenge/list";
@@ -53,20 +55,20 @@ func (service *stockService) InitDataStock() error{
 			break;
 		}
 		paramHttpReq:="";
-		if nextPage != "" {
+		if nextPage != "" { //determine next_page query
 			paramHttpReq="?next_page="+nextPage;
 		}
-    bodyResponse,err:=external.DoRequestStock(baseURLHttpReq+paramHttpReq);
+    bodyResponse,err:=external.DoRequestStock(baseURLHttpReq+paramHttpReq); //exec Http Request
 		if err!=nil {
-			errorsAPI++;
+			errorsAPI++; //inc errors API counter and try with the same page
 			continue;
 		}
     errQuery:=service.repo.InsertStockItems(bodyResponse.Items, tr);
 		if errQuery!=nil {
-			errorTransaction=errQuery;
+			errorTransaction=errQuery; //mark error for this transaction. Defer gonna make Rollback.
 			return fmt.Errorf("transaction error: %w", errQuery);
 		}
-		if bodyResponse.NextPage==""{
+		if bodyResponse.NextPage==""{ //finish stock population
 			break;
 		}
 		nextPage=bodyResponse.NextPage;
@@ -91,32 +93,33 @@ func (service *stockService) InitDataStock() error{
 		return status;
 }
 
-func (service *stockService) GetStock(queries *models.RequestQueries, mode string) ([]models.ItemStock,int,error){
+func (service *stockService) GetStock(queries models.RequestQueries, mode string) (models.StockResponse,error){
 	var rows pgx.Rows;
 	var err error;
-	if mode=="all"{
+	if mode=="all"{ //validate what search type It gonna use
 		rows,err=service.repo.GetAllStock(queries);
 		if err!=nil{
-			return nil, 0, fmt.Errorf("error retrieving entire Stock -> %w",err);
+			return models.StockResponse{}, fmt.Errorf("error retrieving entire Stock -> %w",err);
 		}
 	}else if mode=="recommendation"{
 		rows,err=service.repo.GetRecommendation(queries);
 		if err!=nil{
-			return nil, 0, fmt.Errorf("error retrieving recommendation Stock -> %w",err);
+			return models.StockResponse{}, fmt.Errorf("error retrieving recommendation Stock -> %w",err);
 		}
 	}
-	stock :=[]models.ItemStock{};
-	var count int;
+	stock :=[]models.ItemStock{}; //save the resulting records of prev search
+	var count int; //amount records; useful for pagination
 	for rows.Next(){
 		var row models.ItemStock;
 		err=rows.Scan(&count, &row.Id, &row.Ticker, &row.TargetFrom, &row.TargetTo, &row.Company, &row.Action, &row.Brokerage, &row.RatingFrom, &row.RatingTo, &row.Time);
 		if err!=nil{
-			return nil, 0, fmt.Errorf("error processing row -> %w",err);
+			return models.StockResponse{}, fmt.Errorf("error processing row -> %w",err);
 		}
-		stock=append(stock, row);
+		stock=append(stock, row); //save each record
 	}
+	//assuming 25 records per page, we find total pages, rounding to the nearest integer(page), if last page contains < 25 records
 	totalPages:=math.Ceil( float64(count)/float64(25) );
-	return stock, int(totalPages), nil;
+	return models.StockResponse{TotalPages: totalPages, DataStock: stock}, nil;
 }
 
 func NewStockService(r repository.StockRepository) StockService {

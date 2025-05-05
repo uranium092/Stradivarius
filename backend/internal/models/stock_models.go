@@ -15,13 +15,25 @@ type ItemStock struct {
 	Time       time.Time `json:"time"`
 }
 
-// model for API Response
-type StockResponse struct {
+// model for population API Response
+type StockResponsePopulation struct {
 	Items    []ItemStock `json:"items"`
 	NextPage string      `json:"next_page"`
 }
 
-// Request Queries for API
+// model for own Endpoint-API Response
+type StockResponse struct {
+	TotalPages float64 `json:"totalPages"`
+	DataStock []ItemStock   `json:"dataStock"`
+}
+
+// model to know if the stock population is finished success
+type StockStatus struct {
+	Done bool
+	NextPage string
+}
+
+// Request Queries for own Endpoint-API
 type RequestQueries struct {
 	Page   int
 	Search string
