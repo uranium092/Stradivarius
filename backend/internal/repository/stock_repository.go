@@ -75,12 +75,11 @@ func (conn *stockRepository) buildSQLClause(queries models.RequestQueries, mode 
 
 	//WHERE (search)
 	if queries.Search!=""{
-		queries.Page=1;
 		expression:=" WHERE";
 		if mode=="recommendation"{
 			expression=" AND";
 		}
-		baseSQLClause+=fmt.Sprintf(" %s ticker ILIKE $1 OR company ILIKE $2 OR action ILIKE $3 OR brokerage ILIKE $4 OR rating_to ILIKE $5",expression);
+		baseSQLClause+=fmt.Sprintf(" %s (ticker ILIKE $1 OR company ILIKE $2 OR action ILIKE $3 OR brokerage ILIKE $4 OR rating_to ILIKE $5)",expression);
 		param:="%"+queries.Search+"%";
 		baseSQLArgs=append(baseSQLArgs, param, param, param, param, param);
 	}
