@@ -100,6 +100,7 @@ func (conn *stockRepository) buildSQLClause(queries models.RequestQueries, mode 
 			"brokerage":true,
 			"rating_from":true,
 			"rating_to":true,
+			"datereleased":true,
 		};
 
 		if !allowedColumns[columnName] || (direction!="ASC" && direction!="DESC"){

@@ -15,6 +15,7 @@ const dicColumnNames = {
   brokerage: 'Brokerage',
   rating_from: 'Rating From',
   rating_to: 'Rating To',
+  datereleased: 'Date',
 };
 </script>
 

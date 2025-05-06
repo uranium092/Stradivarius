@@ -1,12 +1,16 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 import { useFetchingStore } from '../stores/fetching';
+import dayjs from 'dayjs';
 
 const fetchingStore = useFetchingStore();
 
 onMounted(() => {
   fetchingStore.changeMode('all');
 });
+
+const getFormattedDate = (date: string): string => dayjs(date).format('DD[ ]MMM[ of ]YYYY');
+
 const columns: { inner: string; id: string }[] = [
   { inner: 'Ticker', id: 'ticker' },
   { inner: 'Target from', id: 'target_from' },
@@ -16,6 +20,7 @@ const columns: { inner: string; id: string }[] = [
   { inner: 'Brokerage', id: 'brokerage' },
   { inner: 'Rating from', id: 'rating_from' },
   { inner: 'Rating to', id: 'rating_to' },
+  { inner: 'Date', id: 'datereleased' },
 ];
 </script>
 
@@ -71,6 +76,9 @@ const columns: { inner: string; id: string }[] = [
                 </td>
                 <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                   {{ i.rating_to }}
+                </td>
+                <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                  {{ getFormattedDate(i.time) }}
                 </td>
               </tr>
             </tbody>
