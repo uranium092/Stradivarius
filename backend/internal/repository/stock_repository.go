@@ -75,6 +75,7 @@ func (conn *stockRepository) buildSQLClause(queries models.RequestQueries, mode 
 
 	//WHERE (search)
 	if queries.Search!=""{
+		queries.Page=1;
 		expression:=" WHERE";
 		if mode=="recommendation"{
 			expression=" AND";

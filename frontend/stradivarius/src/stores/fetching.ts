@@ -150,7 +150,7 @@ export const useFetchingStore = defineStore('fetching', () => {
     if (value === searchFilter.value) {
       return;
     }
-    const success: boolean = await fetchDataTable({ search: value });
+    const success: boolean = await fetchDataTable({ search: value, page: 1 });
     if (success) {
       pagination.currentPage = 1;
       pagination.currentSection = 1;
