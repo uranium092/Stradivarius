@@ -6,7 +6,7 @@ const fetchingStore = useFetchingStore();
 
 const value = ref<string>('');
 
-const dicColumnNames = {
+const dicColumnNames: { [key: string]: string } = {
   ticker: 'Ticker',
   target_from: 'Target From',
   target_to: 'Target To',
