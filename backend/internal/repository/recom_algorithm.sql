@@ -1,58 +1,46 @@
 -- Function to generate action points based on params
 -- Already Stored in CockroachDB
 CREATE OR REPLACE FUNCTION gen_rating(rating_to VARCHAR(25), target_from DECIMAL(5,2), target_to DECIMAL(5,2), action VARCHAR(25))
-RETURNS INTEGER AS $$
-DECLARE 
-points INTEGER:=0; -- acum of points: higher is better
-diffPerc NUMERIC;
+RETURNS NUMERIC AS $$
+DECLARE
+  rating_point INTEGER := 0;
+  equal_point INTEGER := 0;
+  diffPerc NUMERIC := 0;
+  variation_point NUMERIC := 0;
+  action_point INTEGER := 0;
+  final_points NUMERIC := 0;
 BEGIN
   IF rating_to ILIKE 'str%' THEN --Strong-Buy
-    points:=points+4;
+    rating_point:=4;
   ELSIF rating_to ILIKE 'buy' THEN -- Buy
-    points:=points+2;
+    rating_point:=2;
   END IF;
 
-  IF target_to=target_from THEN -- If target keeps, fine signal
-    points:=points+1;
-  ELSE -- there is a variation 
-    diffPerc:=ROUND(( (target_to-target_from)*100 )/target_from,2); -- diff %
+  IF target_to = target_from THEN -- If target keeps, fine signal
+    equal_point:=1;
+  ELSE --there is a variation 
+    diffPerc := ROUND(((target_to - target_from) * 100) / target_from); -- diff %
     IF diffPerc>0 THEN -- diff +% (good)
-      IF diffPerc<=5 THEN
-        points:=points+1;
-      ELSIF diffPerc<=15 THEN
-        points:=points+2;
-      ELSIF diffPerc<=30 THEN
-        points:=points+3;
-      ELSIF diffPerc<=50 THEN
-        points:=points+4;
-      ELSE
-        points:=points+5;
-      END IF;
+      variation_point:=ROUND(POWER((diffPerc / 10), 1.2));
     ELSE -- diff -% (bad)
-      IF diffPerc>=-5 THEN
-        points:=points-1;
-      ELSIF diffPerc>=-15 THEN
-        points:=points-2;
-      ELSIF diffPerc>=-30 THEN
-        points:=points-3;
-      ELSIF diffPerc>=-50 THEN
-        points:=points-4;
-      ELSE
-        points:=points-5;
-      END IF;
+      variation_point:=-ROUND(POWER(ABS(diffPerc)/ 10, 1.2));
     END IF;
   END IF;
 
   -- Quantify the 'action' impact
   IF action ILIKE 'reiterated%' OR action ILIKE 'initiated%' OR action ILIKE '%set%' THEN
-    points:=points+1;
+    action_point:=1;
   ELSIF action ILIKE '%raised%' OR action ILIKE '%upgraded%' THEN
-    points:=points+2;
+    action_point:=2;
   ELSIF action ILIKE '%lowered%' OR action ILIKE '%downgraded%' THEN
-    points:=points-2;
+    action_point:=-2;
   END IF;
 
-  RETURN points -- Acum results
+  -- 'ponderar' values. Each one has an special %
+  final_points:=(variation_point*0.4)+(rating_point*0.3)+(action_point*0.15)+(equal_point*0.15);
+
+  RETURN ROUND(final_points,2);
+  
 END;
 $$ LANGUAGE PLpgSQL;
 
