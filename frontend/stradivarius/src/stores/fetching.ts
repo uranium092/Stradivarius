@@ -90,8 +90,8 @@ export const useFetchingStore = defineStore('fetching', () => {
           : sortFilter.columnName.length > 0 //build sort query based on if this state is full or empty
           ? `${sortFilter.columnName}$${sortFilter.sortType}`
           : '';
-
-      let baseUrl: string = `http://localhost:8080/api/stock/${pathReq}?page=${pageReq}`;
+      const serverUrl = import.meta.env.VITE_SERVER_URL;
+      let baseUrl: string = `${serverUrl}api/stock/${pathReq}?page=${pageReq}`;
 
       if (searchReq != '') {
         baseUrl += `&search=${searchReq}`;

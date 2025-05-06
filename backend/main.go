@@ -52,8 +52,23 @@ func main() {
 		router.Use(cors.New(corsConfig))
 	}
 
+	// in production, serve the dependencies for bundle
+	if os.Getenv("GO_ENV") != "DEV"{
+		router.Static("/assets","../frontend/stradivarius/dist/assets");
+		router.StaticFile("/favicon.ico","../frontend/stradivarius/dist/favicon.ico");
+	}
+
 	// set handler for requests with /api
 	handler.SetupStockHanlder(router.Group("/api"),stockService);
+
+	// in production, serve index.html from bundle
+	if os.Getenv("GO_ENV") != "DEV"{
+		router.NoRoute(func (c *gin.Context){
+			if c.Request.Method=="GET"{
+				c.File("../frontend/stradivarius/dist/index.html");
+			}
+		})
+	}
 
 	router.Run(os.Getenv("PORT"));
 }
