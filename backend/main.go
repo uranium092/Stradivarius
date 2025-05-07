@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -70,5 +71,5 @@ func main() {
 		})
 	}
 
-	router.Run(os.Getenv("PORT"));
+	router.Run(fmt.Sprintf(":%s",os.Getenv("PORT")));
 }
