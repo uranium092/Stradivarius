@@ -1,0 +1,70 @@
+#!/bin/bash
+set -e
+apt update && apt upgrade -y
+
+apt-get install -y git curl ca-certificates make unzip
+
+curl -sL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
+sudo apt install nodejs
+
+
+wget https://go.dev/dl/go1.24.2.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.24.2.linux-amd64.tar.gz
+
+export HOME=/root
+export GOPATH=$HOME/go
+export GOMODCACHE=$GOPATH/pkg/mod
+export GOCACHE=/tmp/go-cache
+export PATH=$PATH:/usr/local/go/bin
+
+mkdir -p $GOPATH $GOMODCACHE $GOCACHE
+
+cat <<EOGO > /etc/profile.d/go.sh
+export PATH=\$PATH:/usr/local/go/bin
+export GOPATH=\$HOME/go
+export GOMODCACHE=\$GOPATH/pkg/mod
+export GOCACHE=/tmp/go-cache
+EOGO
+chmod +x /etc/profile.d/go.sh
+
+git clone https://github.com/uranium092/Stradivarius.git /home/ubuntu/stradivarius
+
+cd /home/ubuntu/stradivarius
+cd frontend/stradivarius
+npm install
+npm run build
+
+cd ../..
+
+cd backend
+go mod tidy
+go build -o main
+
+mkdir -p /etc/app
+
+cat <<-EOVARS | tee /etc/app/stradivarius.env
+URL_COCKROACHDB="${url_db}"
+TOKEN="${token}"
+PORT=${port_http}
+EOVARS
+
+cat <<-EOSERVICE | tee /etc/systemd/system/stradivarius.service
+[Unit]
+Description=stradivarius process to launch app
+After=network.target
+
+[Service]
+ExecStart=/home/ubuntu/stradivarius/backend/main
+WorkingDirectory=/home/ubuntu/stradivarius/backend
+Restart=always
+User=ubuntu
+EnvironmentFile=/etc/app/stradivarius.env
+
+[Install]
+WantedBy=multi-user.target
+EOSERVICE
+
+systemctl daemon-reload
+systemctl enable stradivarius.service
+systemctl start stradivarius.service
