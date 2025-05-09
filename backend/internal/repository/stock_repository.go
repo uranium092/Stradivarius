@@ -137,7 +137,7 @@ func (conn *stockRepository) GetAllStock(queries models.RequestQueries) (pgx.Row
 func (conn *stockRepository) GetRecommendation(queries models.RequestQueries) (pgx.Rows,error){
 	//base Query to get the best actions
 	//invokes an algorithm stored in CockroachDB
-	baseQuery:="SELECT COUNT(*) OVER(), id, ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, datereleased FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,* FROM STOCK WHERE (rating_to ILIKE '%buy%') AND (rating_to NOT ILIKE '%spe%') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>1.5";
+	baseQuery:="SELECT COUNT(*) OVER(), id, ticker, target_from, target_to, company, action, brokerage, rating_from, rating_to, datereleased FROM (SELECT gen_rating(rating_to, target_from, target_to, action) AS total_rating,* FROM STOCK WHERE (rating_to='Strong-Buy' OR rating_to='Buy') AND (target_from>0 AND target_to>0))as sub WHERE total_rating>1.5";
 
 	clause, args, err:=conn.buildSQLClause(queries, "recommendation");
 	if err!=nil{
