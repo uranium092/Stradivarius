@@ -2,7 +2,7 @@
 System that interacts with stocks with solid and secure filters, sorting and recommendations to invest.
 
  ### How to run
- * Make sure you have an ENV var defined like GO_ENV=DEV
+ * Make sure you have an ENV var defined like ```GO_ENV=DEV```
  * You will need .ENV file for security (Send on demand)
  * If you want to deploy this in AWS, you will need:
    * Download AWS CLI and authenticate
