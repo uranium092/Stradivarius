@@ -2,7 +2,7 @@
 System that interacts with stocks with solid and secure filters, sorting and recommendations to invest.
 
  ### How to run
- * Download Go 1.24.2 and Node 20
+ * Download Go 1.24.2 and Node 20 - only for dev mode
  * Make sure you have an ENV var defined like ```GO_ENV=DEV``` - only for dev mode
  * You will need .ENV file for security (Send on demand) - only for dev mode
  * Run the backend:  on root ```/backend``` run  ```go run main.go``` - only for dev mode
