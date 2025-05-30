@@ -2,8 +2,8 @@
 System that interacts with stocks with solid and secure filters, sorting and recommendations to invest.
 
  ### How to run
- * Make sure you have an ENV var defined like ```GO_ENV=DEV```
- * You will need .ENV file for security (Send on demand)
+ * Make sure you have an ENV var defined like ```GO_ENV=DEV``` - only for dev mode
+ * You will need .ENV file for security (Send on demand) - only for dev mode
  * If you want to deploy this in AWS, you will need:
    * Download AWS CLI and authenticate
    * Download Terraform and config its PATH
