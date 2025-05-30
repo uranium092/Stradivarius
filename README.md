@@ -1,5 +1,5 @@
 ## Stradivarius
-System that interacts with stocks with solid and secure filters, sorting and recommendations.
+System that interacts with stocks with solid and secure filters, sorting and recommendations to invest.
 
  ### How to run
  * Make sure you have an ENV var defined like GO_ENV=DEV
