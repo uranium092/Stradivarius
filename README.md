@@ -12,3 +12,6 @@ System that interacts with stocks with solid and secure filters, sorting and rec
    * Download Terraform and config its PATH
    * You will need private credentials to run this infrastructure. (Send on demand)
    * Finally, just run ```terraform apply -var="CREDENTIAL_1" -var="CREDENTIAL_2"```. Remember that it is needed pass the correct CREDENTIALS in this step, so you will need the private credentials.
+   * Now, your infrastructure is being configured, wait a few minutes until it finishes.
+   * Recommended: monitor the status of the instance in AWS Console, there you can know when it is running. When the instance is up and running this App (Stradivarius), you can access it from Browser with ```http://your-ip-instance:port_http```; You can know the IP of the     instance from AWS Console, and ```:port_http``` is the value that you set in ```:port_http``` Terraform Var (default :8080). Example URL: ```http://98.81.182.209:8080```
+
